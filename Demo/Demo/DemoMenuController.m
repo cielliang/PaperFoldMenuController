@@ -64,10 +64,10 @@
         
         }
         
-        UIViewController *viewController = self.viewControllers[indexPath.row];
+        UIViewController *viewController = self.viewControllers[indexPath.section][indexPath.row];
         [cell.textLabel setText:viewController.title];
         
-        if (indexPath.row==self.selectedIndex)
+        if (indexPath.section==self.selectedIndexPath.section && indexPath.row==self.selectedIndexPath.row)
         {
             [tableView selectRowAtIndexPath:indexPath animated:NO scrollPosition:UITableViewScrollPositionNone];
         }

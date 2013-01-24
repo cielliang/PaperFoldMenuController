@@ -22,14 +22,36 @@
     
     NSMutableArray *viewControllers = [NSMutableArray array];
     
-    for (int i=0; i<8; i++)
+    NSMutableArray *viewControllerA = [NSMutableArray array];
+    NSMutableArray *viewControllerB = [NSMutableArray array];
+    NSMutableArray *viewControllerC = [NSMutableArray array];
+    
+    for (int i=0; i<3; i++)
     {
         DemoRootViewController *rootViewController = [[DemoRootViewController alloc] init];
-        [rootViewController setTitle:[NSString stringWithFormat:@"Root VC %i", i+1]];
+        [rootViewController setTitle:[NSString stringWithFormat:@"Root VC A %i", i+1]];
         UINavigationController *rootNavController = [[UINavigationController alloc] initWithRootViewController:rootViewController];
-        [viewControllers addObject:rootNavController];
+        [viewControllerA addObject:rootNavController];
     }
+    [viewControllers addObject:viewControllerA];
+
+    for (int i=0; i<2; i++)
+    {
+        DemoRootViewController *rootViewController = [[DemoRootViewController alloc] init];
+        [rootViewController setTitle:[NSString stringWithFormat:@"Root VC B %i", i+1]];
+        UINavigationController *rootNavController = [[UINavigationController alloc] initWithRootViewController:rootViewController];
+        [viewControllerB addObject:rootNavController];
+    }
+    [viewControllers addObject:viewControllerB];
     
+    for (int i=0; i<3; i++)
+    {
+        DemoRootViewController *rootViewController = [[DemoRootViewController alloc] init];
+        [rootViewController setTitle:[NSString stringWithFormat:@"Root VC C %i", i+1]];
+        UINavigationController *rootNavController = [[UINavigationController alloc] initWithRootViewController:rootViewController];
+        [viewControllerC addObject:rootNavController];
+    }
+    [viewControllers addObject:viewControllerC];
     
     [_menuController setViewControllers:viewControllers];
     

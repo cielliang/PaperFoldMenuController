@@ -51,7 +51,8 @@
 /**
  * Set and return the index of the current view controller
  */
-@property (nonatomic, assign) NSUInteger selectedIndex;
+//@property (nonatomic, assign) NSUInteger selectedIndex;
+@property (nonatomic, strong) NSIndexPath *selectedIndexPath;
 @property (nonatomic, assign, readonly) float menuWidth;
 @property (nonatomic, assign, readonly) int numberOfFolds;
 /**

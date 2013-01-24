@@ -64,38 +64,60 @@
 
 + (NSSet *)keyPathsForValuesAffectingSelectedViewController
 {
-    return [NSSet setWithObjects:@"selectedIndex", nil];
+//    return [NSSet setWithObjects:@"selectedIndex", nil];
+    return [NSSet setWithObjects:@"selectedIndexPath", nil];
 }
 
 - (UIViewController *)selectedViewController
 {
-    if (self.selectedIndex == NSNotFound)
+//    if (self.selectedIndex == NSNotFound)
+    if (self.selectedIndexPath == nil)
     {
         return nil;
     }
     else
     {
-        return self.viewControllers[self.selectedIndex];
+//        return self.viewControllers[self.selectedIndex];
+        return self.viewControllers[self.selectedIndexPath.section][self.selectedIndexPath.row];
     }
 }
 
 - (void)setSelectedViewController:(UIViewController *)theSelectedViewController
 {
-    NSUInteger theSelectedIndex = [self.viewControllers indexOfObject:theSelectedViewController];
+//    NSUInteger theSelectedIndex = [self.viewControllers indexOfObject:theSelectedViewController];
     
-    if (theSelectedIndex == NSNotFound)
-    {
+//    if (theSelectedIndex == NSNotFound)
+//    {
+//        [NSException raise:NSInternalInconsistencyException format:@"Could not selected view controller because it is not registered.\n%@", theSelectedViewController];
+//        return;
+//    }
+    
+//    self.selectedIndex = theSelectedIndex;
+    
+    NSInteger theSelectedSectionIndex = 0;
+    NSInteger theSelectedRowIndex = NSNotFound;
+    for (NSArray *viewControllers in self.viewControllers) {
+        theSelectedRowIndex = [viewControllers indexOfObject:theSelectedViewController];
+        if (theSelectedRowIndex != NSNotFound) {
+            self.selectedIndexPath = [NSIndexPath indexPathForRow:theSelectedRowIndex inSection:theSelectedSectionIndex];
+            break;
+        } else {
+            theSelectedSectionIndex ++;
+        }
+    }
+    
+    if (theSelectedRowIndex == NSNotFound) {
         [NSException raise:NSInternalInconsistencyException format:@"Could not selected view controller because it is not registered.\n%@", theSelectedViewController];
         return;
     }
-    
-    self.selectedIndex = theSelectedIndex;
+
 }
 
 + (BOOL)automaticallyNotifiesObserversOfSelectedIndex {
     return NO;
 }
 
+/*
 - (void)setSelectedIndex:(NSUInteger)theSelectedIndex
 {
     if (!self.isViewLoaded)
@@ -151,9 +173,72 @@
         }
     }
 }
+*/
+
+- (void)setSelectedIndexPath:(NSIndexPath *)theSelectedIndexPath
+{
+    if (!self.isViewLoaded)
+    {
+        __weak __typeof(*&self) theWeakSelf = self;
+        [self.viewDidLoadBlocks addObject:[^{
+            __strong __typeof(*&self) theStrongSelf = theWeakSelf;
+            if (theStrongSelf == nil) {
+                return;
+            }
+//            theStrongSelf.selectedIndex = theSelectedIndex;
+            theStrongSelf.selectedIndexPath = theSelectedIndexPath;
+        } copy]];
+    }
+    else
+    {
+//        NSUInteger theOldSelectedIndex = self.selectedIndex;
+//        NSUInteger theNewSelectedIndex = theSelectedIndex;
+        NSIndexPath *theOldSelectedIndexPath = self.selectedIndexPath;
+        NSIndexPath *theNewSelectedIndexPath = theSelectedIndexPath;
+        
+        if (theOldSelectedIndexPath == theNewSelectedIndexPath) {
+            return;
+        }
+        
+        [self willChangeValueForKey:@"selectedIndex"];
+        
+//        if (theOldSelectedIndex != NSNotFound)
+        if (theOldSelectedIndexPath != nil)
+        {
+            UIViewController *theOldViewController = self.viewControllers[theOldSelectedIndexPath.section][theOldSelectedIndexPath.row];
+            [theOldViewController willMoveToParentViewController:nil];
+            [theOldViewController.view removeFromSuperview];
+            [theOldViewController removeFromParentViewController];
+            
+            [self.menuTableView deselectRowAtIndexPath:[NSIndexPath indexPathForRow:theOldSelectedIndexPath.row inSection:theOldSelectedIndexPath.section] animated:YES];
+        }
+        
+        _selectedIndexPath = theNewSelectedIndexPath;
+        
+//        if (theNewSelectedIndex != NSNotFound)
+        if (theNewSelectedIndexPath != nil)
+        {
+            UIViewController *theNewViewController = self.viewControllers[theNewSelectedIndexPath.section][theNewSelectedIndexPath.row];
+            theNewViewController.view.frame = self.contentView.bounds;
+            [self addChildViewController:theNewViewController];
+            [self.contentView addSubview:theNewViewController.view];
+            [theNewViewController didMoveToParentViewController:self];
+            
+            [self.menuTableView selectRowAtIndexPath:[NSIndexPath indexPathForRow:theNewSelectedIndexPath.row inSection:theNewSelectedIndexPath.section] animated:YES scrollPosition:UITableViewScrollPositionNone];
+        }
+        
+        [self didChangeValueForKey:@"selectedIndexPath"];
+        
+        if (self.paperFoldView.state != PaperFoldStateLeftUnfolded)
+        {
+            [self reloadMenu];
+        }
+    }
+}
 
 - (void)commonInit {
-    _selectedIndex = NSNotFound;
+//    _selectedIndex = NSNotFound;
+    _selectedIndexPath = nil;
 }
 
 - (id)initWithMenuWidth:(float)menuWidth numberOfFolds:(int)numberOfFolds
@@ -221,20 +306,34 @@
         theBlock();
     }
     self.viewDidLoadBlocks = nil;
+    
+    self.selectedIndexPath = [NSIndexPath indexPathForRow:0 inSection:0];
 }
 
 - (void)setViewControllers:(NSMutableArray *)viewControllers
 {
-    self.selectedIndex = NSNotFound; // Forces any child view controller to be removed.
+//    self.selectedIndex = NSNotFound; // Forces any child view controller to be removed.
+    self.selectedIndexPath = nil; // Forces any child view controller to be removed.
     _viewControllers = viewControllers;
-    if ([_viewControllers count]>0) [self setSelectedIndex:0];
+//    if ([_viewControllers count]>0) [self setSelectedIndex:0];
+    if ([_viewControllers count]>0) [self setSelectedIndexPath:[NSIndexPath indexPathForRow:0 inSection:0]];
     [self reloadMenu];
 }
 
-- (void)addViewController:(UIViewController*)viewController;
+//- (void)addViewController:(UIViewController*)viewController;
+//{
+//    if (!_viewControllers) _viewControllers = [NSMutableArray array];
+//    [self.viewControllers addObject:viewController];
+//    [self reloadMenu];
+//}
+
+- (void)addViewController:(UIViewController *)viewController atSectionIndex:(NSInteger)sectionIndex
 {
     if (!_viewControllers) _viewControllers = [NSMutableArray array];
-    [self.viewControllers addObject:viewController];
+    for (int i=0; i <= sectionIndex; i++) {
+        if (!_viewControllers[i]) _viewControllers[i] = [NSMutableArray array];
+    }
+    [self.viewControllers[sectionIndex] addObject:viewController];
     [self reloadMenu];
 }
 
@@ -250,8 +349,14 @@
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-    if (tableView==self.menuTableView) return [self.viewControllers count];
+//    if (tableView==self.menuTableView) return [self.viewControllers count];
+    if (tableView==self.menuTableView) return [self.viewControllers[section] count];
     else return 0;
+}
+
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
+{
+    return [self.viewControllers count];
 }
 
 - (UITableViewCell*)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
@@ -265,10 +370,10 @@
             cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:identifier];
         }
         
-        UIViewController *viewController = self.viewControllers[indexPath.row];
+        UIViewController *viewController = self.viewControllers[indexPath.section][indexPath.row];
         [cell.textLabel setText:viewController.title];
         
-        if (indexPath.row==self.selectedIndex)
+        if (indexPath.section==self.selectedIndexPath.section && indexPath.row==self.selectedIndexPath.row)
         {
             [tableView selectRowAtIndexPath:indexPath animated:NO scrollPosition:UITableViewScrollPositionNone];
         }
@@ -285,11 +390,11 @@
         BOOL shouldSelect = YES;
         if ([self.delegate respondsToSelector:@selector(paperFoldMenuController:shouldSelectViewController:)])
         {
-            shouldSelect = [self.delegate paperFoldMenuController:self shouldSelectViewController:self.viewControllers[indexPath.row]];
+            shouldSelect = [self.delegate paperFoldMenuController:self shouldSelectViewController:self.viewControllers[indexPath.section][indexPath.row]];
         }
         if (shouldSelect)
         {
-            [self setSelectedIndex:indexPath.row];
+            [self setSelectedIndexPath:indexPath];
             if ([self.delegate respondsToSelector:@selector(paperFoldMenuController:didSelectViewController:)])
             {
                 [self.delegate paperFoldMenuController:self didSelectViewController:self.selectedViewController];
