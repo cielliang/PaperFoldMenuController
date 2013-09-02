@@ -344,6 +344,13 @@
         if (!_viewControllers[i]) _viewControllers[i] = [NSMutableArray array];
     }
     [self.viewControllers[sectionIndex] insertObject:viewController atIndex:rowIndex];
+    [self reloadMenu];
+}
+
+- (void)removeViewControllerAtSectionIndex:(NSInteger)sectionIndex rowIndex:(NSInteger)rowIndex
+{
+    [_viewControllers[sectionIndex] removeObjectAtIndex:rowIndex];
+    [self reloadMenu];
 }
 
 - (void)reloadMenu

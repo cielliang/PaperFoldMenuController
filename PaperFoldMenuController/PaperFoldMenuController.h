@@ -71,4 +71,6 @@
 
 - (void)addViewController:(UIViewController *)viewController atSectionIndex:(NSInteger)sectionIndex;
 
+- (void)removeViewControllerAtSectionIndex:(NSInteger)sectionIndex rowIndex:(NSInteger)rowIndex;
+
 @end
