@@ -337,6 +337,15 @@
     [self reloadMenu];
 }
 
+- (void)insertViewController:(UIViewController *)viewController atSectionIndex:(NSInteger)sectionIndex rowIndex:(NSInteger)rowIndex
+{
+    if (!_viewControllers) _viewControllers = [NSMutableArray array];
+    for (int i=0; i <= sectionIndex; i++) {
+        if (!_viewControllers[i]) _viewControllers[i] = [NSMutableArray array];
+    }
+    [self.viewControllers[sectionIndex] insertObject:viewController atIndex:rowIndex];
+}
+
 - (void)reloadMenu
 {
     [self.menuTableView reloadData];

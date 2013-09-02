@@ -66,4 +66,9 @@
  * @param animated A boolean value to indicate if the folding/unfolding should be animated
  */
 - (void)showMenu:(BOOL)show animated:(BOOL)animated;
+
+- (void)insertViewController:(UIViewController *)viewController atSectionIndex:(NSInteger)sectionIndex rowIndex:(NSInteger)rowIndex;
+
+- (void)addViewController:(UIViewController *)viewController atSectionIndex:(NSInteger)sectionIndex;
+
 @end
